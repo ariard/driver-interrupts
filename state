@@ -1,0 +1,9 @@
+- how to register driver
+- how to register IRQ
+- how to read IRQ
+
+driver_probe
+driver_connect
+irq_register
+if keyboard printk
+

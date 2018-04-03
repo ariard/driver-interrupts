@@ -1,0 +1,1 @@
+cmd_/home/driver/driver-interrupts/keylogger.ko := ld -r -m elf_x86_64 -T ./scripts/module-common.lds --build-id  -o /home/driver/driver-interrupts/keylogger.ko /home/driver/driver-interrupts/keylogger.o /home/driver/driver-interrupts/keylogger.mod.o ;  true
