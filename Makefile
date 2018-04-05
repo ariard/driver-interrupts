@@ -1,5 +1,6 @@
 NAME    	= module_keylogger
 DIR_TEST	= test/
+EXTRA_CFLAGS	= -I$(src)/include/
 
 ifneq ($(KERNELRELEASE),)
 	obj-m		+= $(NAME).o
