@@ -10,6 +10,9 @@ MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Antoine Riard <ariard@student.42.fr>");
 MODULE_DESCRIPTION("keylogger module");
 
+# define KEYBOARD_VENDOR_ID	0x05ac
+# define KEYBOARD_PRODUCT_ID	0x024f
+
 static ssize_t keylogger_read(struct file *filp, char __user *buffer,
 				size_t length, loff_t *offset)
 {
@@ -39,7 +42,7 @@ static struct miscdevice keylogger_misc = {
 
 static int keyboard_probe(struct usb_interface *interface, const struct usb_device_id *id)
 {
-	printk(KERN_INFO "keyboard driver : (%04X:%04X) plugged\n", id->idVendor, id->idProduct);
+	printk(KERN_INFO "keyboard driver : probing for %04X:%04X\n", id->idVendor, id->idProduct);
 	return 0;
 }
 
@@ -49,7 +52,8 @@ static void keyboard_disconnect(struct usb_interface *interface)
 }
 
 static struct usb_device_id keyboard_table[] = {
-	{ USB_DEVICE(0x05ac, 0x002) },
+	{ USB_DEVICE(KEYBOARD_VENDOR_ID, KEYBOARD_PRODUCT_ID) },
+/*	{ .driver_info = 42}, */
 	{}
 };
 
@@ -94,7 +98,8 @@ static void __exit keylogger_cleanup(void)
 	printk(KERN_INFO "keylogger module : deregister\n");
 
 /*	void driver_register(struct device_driver *drv) */
-	usb_register(&keyboard_driver);
+	usb_deregister(&keyboard_driver);
+	printk(KERN_INFO "driver keylogger : register\n");
 }
 
 module_init(keylogger_init);
