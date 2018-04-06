@@ -7,3 +7,12 @@ driver_connect
 irq_register
 if keyboard printk
 
+
+
+TODO :
+- what does usb_register_dev do ?
+- difference between hid, usb, input ?
+- does I need to use URB ?
+- how to register IRQ ? and where
+
+=> Chp 14, "Putting It All Together"
