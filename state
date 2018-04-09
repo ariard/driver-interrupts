@@ -1,15 +1,21 @@
-TODO :
-- difference between hid, usb, input ?
-- does I need to use URB ?
+- archi
+- workqueue, tasklets
+- scan code state machine 
 
-=> Chp 14, "Putting It All Together"
+- how to know which scan code is used ?
 
-=> IRQ first
-	-> define port to communicate with Apple Keyboard
-		-> implement kernel-probing or selfprobing
-			-> install interrupt handler and request in init
-				-> test if handler works
 
+
+- QUESTIONS 
 
 Apple keyboard est affiche en tant que peripherique usb. Comment se fait-il qu il soit affiche sur IRQ 1 / x60 etant donne qu il n est pas PS/2
  emulation au niveau de l uefi/linux
+
+- Does interrupts frome the line  are on a sequential timeline ?
+- Does it legitimate to disable interrupt why reading a spinlocked structure ?
+
+
+- Kernel preemption
+- Interrupts
+- Exceptions
+- Lock & Concurrency

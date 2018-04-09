@@ -9,8 +9,10 @@
 # include <linux/device.h>
 # include <linux/string.h>
 # include <linux/list.h>
-# include <linux/irq.h>
+# include <linux/workqueue.h>
 # include <linux/interrupt.h>
+# include <linux/spinlock.h>
+# include <asm/io.h>
 
 # define KEYBOARD_IRQ		1
 
