@@ -1,18 +1,15 @@
-- how to register driver
-- how to register IRQ
-- how to read IRQ
-
-driver_probe
-driver_connect
-irq_register
-if keyboard printk
-
-
-
 TODO :
-- what does usb_register_dev do ?
 - difference between hid, usb, input ?
 - does I need to use URB ?
-- how to register IRQ ? and where
 
 => Chp 14, "Putting It All Together"
+
+=> IRQ first
+	-> define port to communicate with Apple Keyboard
+		-> implement kernel-probing or selfprobing
+			-> install interrupt handler and request in init
+				-> test if handler works
+
+
+Apple keyboard est affiche en tant que peripherique usb. Comment se fait-il qu il soit affiche sur IRQ 1 / x60 etant donne qu il n est pas PS/2
+ emulation au niveau de l uefi/linux
