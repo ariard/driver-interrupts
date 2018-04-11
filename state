@@ -1,9 +1,10 @@
-- archi
-- workqueue, tasklets
-- scan code state machine 
+TODO :
+ - how to know which scan code is used ?
+ - assuming 2, scan code state machine + key code state machine 
 
-- how to know which scan code is used ?
 
+
+- how to protect against flow to big ?
 
 
 - QUESTIONS 
@@ -19,3 +20,11 @@ Apple keyboard est affiche en tant que peripherique usb. Comment se fait-il qu i
 - Interrupts
 - Exceptions
 - Lock & Concurrency
+
+
+ARCHI :
+	Interrupt -> [scan_array] -> Tasklet
+					|
+     Fops  <- [keystroke_array] <- State machine
+			|
+		   buffer exit

