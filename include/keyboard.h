@@ -39,12 +39,6 @@
 # define PRESSED	0
 # define RELEASED	1
 
-ssize_t keylogger_read(struct file *filp, char __user *buffer,
-				size_t length, loff_t *offset);
-
-ssize_t keylogger_write(struct file *filp, const char __user *buffer,
-				size_t length, loff_t *offset);
-
 struct transition_table {
 	unsigned int	ct;
 	unsigned int	input;
@@ -76,5 +70,6 @@ void	scan_fsm_update(struct fsm *scan_fsm, unsigned int new);
 void	scan_fsm_clear(struct fsm *scan_fsm);
 
 void	scan_fsm_send(struct fsm *scan_fsm, void *target);
+
 
 #endif

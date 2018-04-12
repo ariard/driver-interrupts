@@ -6,7 +6,7 @@ PWD		= $(shell pwd)
 ifneq ($(KERNELRELEASE),)
 
 	obj-m		:= $(NAME).o
-	$(NAME)-y	:= $(SRCS)fops.o $(SRCS)state_machine.o $(SRCS)module_keylogger.o
+	$(NAME)-y	:= $(SRCS)state_machine.o $(SRCS)module_keylogger.o
 else
 	
 	KDIR		?= /lib/modules/`uname -r`/build

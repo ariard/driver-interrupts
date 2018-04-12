@@ -18,13 +18,16 @@ void	scan_fsm_update(struct fsm *scan_fsm, unsigned int new)
 {
 	unsigned int	i = -1;	
 
+	printk(KERN_INFO "ct %x && %x\n", scan_fsm->ct, new);
 	while (scan_table[++i].state != ERROR) {
 		if (scan_table[i].ct == scan_fsm->ct && scan_table[i].input == new) {
+			printk(KERN_INFO "match");
 			scan_fsm->ct = scan_table[i].output;
 			scan_fsm->state = scan_table[i].state;
 			scan_fsm->key = scan_table[i].key;
 			scan_fsm->position = scan_table[i].position;
 			scan_fsm->name = scan_table[i].name;
+			break;
 		}
 	}
 	if (scan_table[i].state == ERROR)
@@ -47,10 +50,13 @@ void	scan_fsm_send(struct fsm *scan_fsm, void *target)
 
 	if ((ks = kmalloc(sizeof(struct keystroke), GFP_KERNEL))) {
 		ks->key = scan_fsm->key;
+		/* array of flags shift, ctrl, caps + delay */
 		ks->state = scan_fsm->position;
 		strcpy(ks->name, scan_fsm->name);
 		do_gettimeofday(&tv);
 		ks->tv = tv;
+		printk(KERN_INFO "key %c state %s name %s\n", ks->key, (ks->state == 0) ? "PRESSED" :
+			"RELEASED", ks->name);
 		INIT_LIST_HEAD(&ks->list);
 		list_add(&ks->list, target);
 	}
