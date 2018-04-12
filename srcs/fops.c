@@ -15,8 +15,3 @@ ssize_t keylogger_write(struct file *filp, const char __user *buffer,
 
 	return retval;
 }
-
-struct file_operations keylogger_misc_fops = {
-	.read = keylogger_read,
-	.write = keylogger_write,
-};

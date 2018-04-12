@@ -1,26 +1,27 @@
 NAME    	= module_keylogger
-DIR_TEST	= test/
 EXTRA_CFLAGS	= -I$(src)/include/
 SRCS		= srcs/
+PWD		= $(shell pwd)
 
 ifneq ($(KERNELRELEASE),)
-	obj-m			+= $(SRCS)/$(NAME).o
-	module_keylogger-y	:= $(SRCS)fops.o $(SRCS)state_machine.o $(SRCS)tools.c
-else
 
-	KERNELDIR		?= /lib/modules/$(shell uname -r)/build
-	PWD			= $(shell pwd)
+	obj-m		:= $(NAME).o
+	$(NAME)-y	:= $(SRCS)fops.o $(SRCS)state_machine.o $(SRCS)module_keylogger.o
+else
+	
+	KDIR		?= /lib/modules/`uname -r`/build
 
 default:
-	$(MAKE) -C $(KERNELDIR) M=$(PWD)
-
-endif
+	$(MAKE) -C $(KDIR) M=$(PWD)
 
 clean:
-	@rm -f Module.symvers $(SRCS)$(NAME).mod.c $(SRCS)$(NAME).mod.o $(SRCS)$(NAME).o modules.order
+	@rm -f Module.symvers $(NAME).mod.c $(NAME).mod.o $(NAME).o modules.order
 	@rm -f built-in.o
 
 fclean: clean
 	@rm -f $(SRCS)$(NAME).ko
+	@rm -f $(SRCS)*.o
 
 re: clean default
+
+endif
