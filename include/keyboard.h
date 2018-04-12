@@ -9,11 +9,11 @@
 # include <linux/string.h>
 # include <linux/workqueue.h>
 # include <linux/interrupt.h>
-# include <linux/delay.h>
 # include <linux/spinlock.h>
 # include <linux/time.h>
 # include <linux/list.h>
 # include <linux/slab.h>
+# include <linux/uaccess.h>
 # include <asm/io.h>
 
 # define KEYBOARD_IRQ	1
@@ -61,6 +61,7 @@ struct keystroke {
 	unsigned char		key;
 	unsigned char		state;
 	char			name[25];
+	unsigned int		ascii;
 	struct timeval		tv;
 	struct list_head	list;
 };
@@ -70,6 +71,5 @@ void	scan_fsm_update(struct fsm *scan_fsm, unsigned int new);
 void	scan_fsm_clear(struct fsm *scan_fsm);
 
 void	scan_fsm_send(struct fsm *scan_fsm, void *target);
-
 
 #endif
