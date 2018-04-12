@@ -1,6 +1,6 @@
 TODO :
- - how to know which scan code is used ?
- - assuming 2, scan code state machine + key code state machine 
+- state machine : make code set ; break code set;
+- keystroke_array
 
 
 
@@ -23,8 +23,10 @@ Apple keyboard est affiche en tant que peripherique usb. Comment se fait-il qu i
 
 
 ARCHI :
-	Interrupt -> [scan_array] -> Tasklet
-					|
-     Fops  <- [keystroke_array] <- State machine
+		Interrupt -> [scan_array] -> Tasklet
+						|
+Key SM ~tmp_log <- [keystroke_array] <- Make/Break State Machine 
+   |			|
+buffer tmp	Key State Machine ~final_log
 			|
 		   buffer exit

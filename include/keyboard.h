@@ -31,6 +31,10 @@
 # define SCAN_SET_TWO	0x02
 # define SCAN_SET_THREE	0x03
 
+# define SUCCESS	0
+# define ERROR		-1
+# define UNDEFINED	1
+
 ssize_t keylogger_read(struct file *filp, char __user *buffer,
 				size_t length, loff_t *offset);
 
@@ -38,5 +42,19 @@ ssize_t keylogger_write(struct file *filp, const char __user *buffer,
 				size_t length, loff_t *offset);
 
 struct file_operations keylogger_misc_fops;
+
+unsigned int scan_fsm;
+
+struct transition_table {
+	unsigned int	current;
+	unsigned int	input;
+	unsigned int	output;
+	int		state;
+}
+
+struct fsm {
+	unsigned int current;
+	unsigned int state;
+}
 
 #endif

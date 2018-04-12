@@ -5,7 +5,7 @@ SRCS		= srcs/
 
 ifneq ($(KERNELRELEASE),)
 	obj-m			+= $(SRCS)/$(NAME).o
-	module_keylogger-y	:= $(SRCS)/fops.o
+	module_keylogger-y	:= $(SRCS)fops.o $(SRCS)state_machine.o
 else
 
 	KERNELDIR		?= /lib/modules/$(shell uname -r)/build
