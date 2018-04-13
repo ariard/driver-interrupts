@@ -1,8 +1,7 @@
 TODO :
 - fops : open, read, write
 
-	=> array flags, parse entries to get ascii value, ks->ascii, delay
-	=> look timedelay.h
+	=> array flags, ctrl + alt ?
 	=> kern log, print all
 
 - how to protect against flow to big/to fast
@@ -44,6 +43,11 @@ misc_dev ?
 GWOJDA:
 - key set 1, cmd ?
 - detect the tty ?
+- Unknown key release, Use 'setkeycodes e60 <keycode> to make it known'
+- inconsistent state capslock
 
 
 dissociation CPU time/flow of execution
+
+BONUS :
+- stat key : session, touche plus appuye, le temps le plus long sur une touche

