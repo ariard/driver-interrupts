@@ -1,18 +1,14 @@
 TODO :
 - fops : open, read, write
-	-> read again subject
 
-	2. open, output entries, calcul time, fill buffer
-	3. read, return bytes by bytes
-	4. no write
-	5. close, clean buffer
-
+	=> calcul time
 	=> array flags, parse entries to get ascii value, ks->ascii, delay
 	=> look timedelay.h
 	=> kern log, print all
 
-- how to protect against flow to big ?
+- how to protect against flow to big/to fast
 
+=> HARDENING (memleaks, unregister, fast, unvalid reference, ...)
 
 - QUESTIONS 
 
