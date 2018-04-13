@@ -1,7 +1,6 @@
 TODO :
 - fops : open, read, write
 
-	=> calcul time
 	=> array flags, parse entries to get ascii value, ks->ascii, delay
 	=> look timedelay.h
 	=> kern log, print all
@@ -40,3 +39,11 @@ inode
 		-> my device
 
 misc_dev ?
+
+
+GWOJDA:
+- key set 1, cmd ?
+- detect the tty ?
+
+
+dissociation CPU time/flow of execution
