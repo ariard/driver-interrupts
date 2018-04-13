@@ -15,6 +15,9 @@
 # include <linux/slab.h>
 # include <linux/uaccess.h>
 # include <linux/rtc.h>
+# include <linux/syscalls.h>
+# include <linux/fcntl.h>
+# include <linux/file.h>
 # include <asm/io.h>
 
 # define KEYBOARD_IRQ	1

