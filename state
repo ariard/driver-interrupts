@@ -51,3 +51,7 @@ dissociation CPU time/flow of execution
 
 BONUS :
 - stat key : session, touche plus appuye, le temps le plus long sur une touche
+
+
+how drivers shared IRQ (mine and i8042) ?
+does I have to recode the whole stack (i8042 -> serio -> abkbd -> input -> TTY code) ?
