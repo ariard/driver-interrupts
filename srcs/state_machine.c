@@ -200,7 +200,7 @@ static unsigned int	WHICH_ASCII(unsigned char key)
 	return value;
 }
  
-void			scan_fsm_send(struct fsm *scan_fsm, void *target)
+void			scan_fsm_send(struct fsm *scan_fsm, void *target, rwlock_t *keylist_rwlock)
 {
 	struct timeval		tv;
 	struct rtc_time		tm;
@@ -221,7 +221,9 @@ void			scan_fsm_send(struct fsm *scan_fsm, void *target)
 		ks->tm = tm;
 
 		INIT_LIST_HEAD(&ks->list);
+		write_lock(keylist_rwlock);
 		list_add_tail(&ks->list, target);
+		write_unlock(keylist_rwlock);
 	}
 }
 

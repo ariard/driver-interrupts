@@ -22,7 +22,7 @@
 
 # define KEYBOARD_IRQ	1
 
-# define SIZE		1000
+# define SIZE		10000
 
 /* Device Ports, Cmd, Data */
 
@@ -69,21 +69,21 @@
 # define ENTER		13
 
 struct transition_table {
-	unsigned int	ct;
-	unsigned int	input;
-	unsigned int	output;
-	int		state;
-	char		key;
-	char		position;
-	char		*name;
+	unsigned int		ct;
+	unsigned int		input;
+	unsigned int		output;
+	int			state;
+	char			key;
+	char			position;
+	char			*name;
 };
 
 struct fsm {
-	unsigned int	ct;
-	unsigned int 	state;
-	char		key;	
-	char		position;
-	char		*name;
+	unsigned int		ct;
+	unsigned int 		state;
+	char			key;	
+	char			position;
+	char			*name;
 };
 
 struct keystroke {
@@ -99,6 +99,6 @@ void	scan_fsm_update(struct fsm *scan_fsm, unsigned int new);
 
 void	scan_fsm_clear(struct fsm *scan_fsm);
 
-void	scan_fsm_send(struct fsm *scan_fsm, void *target);
+void	scan_fsm_send(struct fsm *scan_fsm, void *target, rwlock_t *keylist_rwlock);
 
 #endif
