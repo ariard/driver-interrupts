@@ -88,6 +88,9 @@
 # define SPACE		214
 # define K_ENTER	215
 
+# define PIC1_PORT	0x20
+# define PIC_EOI	0x20	
+
 struct transition_table {
 	unsigned int		ct;
 	unsigned int		input;

