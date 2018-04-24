@@ -55,8 +55,41 @@ static struct transition_table		scan_table [] = {
 	{ 0x0, 0x34, 0x34, SUCCESS, '.', PRESSED, "." },
 	{ 0x0, 0x35, 0x35, SUCCESS, '/', PRESSED, "/" },
 	{ 0x0, 0x36, 0x36, SUCCESS, RIGHT_SHIFT, PRESSED, "right shift" },
+	{ 0x0, 0x37, 0x37, SUCCESS, '*', PRESSED, "*" },
+	{ 0x0, 0x38, 0x38, SUCCESS, LEFT_ALT, PRESSED, "left alt" },
+	{ 0x0, 0x39, 0x39, SUCCESS, SPACE, PRESSED, "space" },
 	{ 0x0, 0x3A, 0x3A, SUCCESS, CAPSLOCK, PRESSED, "CapsLock" },
+	{ 0x0, 0x3B, 0x3B, SUCCESS, F1, PRESSED, "F1" },
+	{ 0x0, 0x3C, 0x3C, SUCCESS, F2, PRESSED, "F2" },
+	{ 0x0, 0x3D, 0x3D, SUCCESS, F3, PRESSED, "F3" },
+	{ 0x0, 0x3E, 0x3E, SUCCESS, F4, PRESSED, "F4" },
+	{ 0x0, 0x3F, 0x3F, SUCCESS, F5, PRESSED, "F5" },
+	{ 0x0, 0x40, 0x40, SUCCESS, F6, PRESSED, "F6" },
+	{ 0x0, 0x41, 0x41, SUCCESS, F7, PRESSED, "F7" },
+	{ 0x0, 0x42, 0x42, SUCCESS, F8, PRESSED, "F8" },
+	{ 0x0, 0x43, 0x43, SUCCESS, F9, PRESSED, "F9" },
+	{ 0x0, 0x44, 0x44, SUCCESS, F10, PRESSED, "F10" },
+	{ 0x0, 0x45, 0x45, SUCCESS, NUMBERLOCK, PRESSED, "NumberLock" },
+	{ 0x0, 0x46, 0x46, SUCCESS, SCROLLLOCK, PRESSED, "ScrollLock" },
+	{ 0x0, 0x47, 0x47, SUCCESS, '7', PRESSED, "7" },
+	{ 0x0, 0x48, 0x48, SUCCESS, '8', PRESSED, "8" },
+	{ 0x0, 0x49, 0x49, SUCCESS, '9', PRESSED, "9" },
+	{ 0x0, 0x4A, 0x4A, SUCCESS, '-', PRESSED, "-" },
+	{ 0x0, 0x4B, 0x4B, SUCCESS, '4', PRESSED, "4" },
+	{ 0x0, 0x4C, 0x4C, SUCCESS, '5', PRESSED, "5" },
+	{ 0x0, 0x4D, 0x4D, SUCCESS, '6', PRESSED, "6" },
+	{ 0x0, 0x4E, 0x4E, SUCCESS, '+', PRESSED, "+" },
+	{ 0x0, 0x4F, 0x4F, SUCCESS, '1', PRESSED, "1" },
+	{ 0x0, 0x50, 0x50, SUCCESS, '2', PRESSED, "2" },
+	{ 0x0, 0x51, 0x51, SUCCESS, '3', PRESSED, "3" },
+	{ 0x0, 0x52, 0x52, SUCCESS, '0', PRESSED, "0" },
+	{ 0x0, 0x53, 0x53, SUCCESS, '.', PRESSED, "." },
+	{ 0x0, 0x57, 0x57, SUCCESS, F11, PRESSED, "F11" },
+	{ 0x0, 0x58, 0x58, SUCCESS, F12, PRESSED, "F12" },
+	{ 0x0, 0xE0, 0xE0, VOID, K_ENTER, PRESSED, "Keyboard Enter"},
+	{ 0x0, 0x1C, 0x1C, SUCCESS, K_ENTER, PRESSED, "Keyboard Enter"},
 
+	/* Sep */
 	{ 0x0, 0x81, 0x81, SUCCESS, ESC, RELEASED, "Escape" },
 	{ 0x0, 0x82, 0x82, SUCCESS, '1', RELEASED, "1" },
 	{ 0x0, 0x83, 0x83, SUCCESS, '2', RELEASED, "2" },
@@ -110,8 +143,41 @@ static struct transition_table		scan_table [] = {
 	{ 0x0, 0xB3, 0xB3, SUCCESS, ',', RELEASED, "," },
 	{ 0x0, 0xB4, 0xB4, SUCCESS, '.', RELEASED, "." },
 	{ 0x0, 0xB5, 0xB5, SUCCESS, '/', RELEASED, "/" },
+	{ 0x0, 0xB6, 0xB6, SUCCESS, RIGHT_SHIFT, RELEASED, "right shift" },
+	{ 0x0, 0xB7, 0xB7, SUCCESS, '*', RELEASED, "*" },
+	{ 0x0, 0xB8, 0xB8, SUCCESS, LEFT_ALT, RELEASED, "left alt" },
+	{ 0x0, 0xB9, 0xB9, SUCCESS, SPACE, RELEASED, "space" },
 	{ 0x0, 0xBA, 0xBA, SUCCESS, CAPSLOCK, RELEASED, "CapsLock" },
 	{ 0x0, 0xB6, 0xB6, SUCCESS, RIGHT_SHIFT, RELEASED, "right shift" },
+	{ 0x0, 0xBB, 0xBB, SUCCESS, F1, RELEASED, "F1" },
+	{ 0x0, 0xBC, 0xBC, SUCCESS, F2, RELEASED, "F2" },
+	{ 0x0, 0xBD, 0xBD, SUCCESS, F3, RELEASED, "F3" },
+	{ 0x0, 0xBE, 0xBE, SUCCESS, F4, RELEASED, "F4" },
+	{ 0x0, 0xBF, 0xBF, SUCCESS, F5, RELEASED, "F5" },
+	{ 0x0, 0xC0, 0xC0, SUCCESS, F6, RELEASED, "F6" },
+	{ 0x0, 0xC1, 0xC1, SUCCESS, F7, RELEASED, "F7" },
+	{ 0x0, 0xC2, 0xC2, SUCCESS, F8, RELEASED, "F8" },
+	{ 0x0, 0xC3, 0xC3, SUCCESS, F9, RELEASED, "F9" },
+	{ 0x0, 0xC4, 0xC4, SUCCESS, F10, RELEASED, "F10" },
+	{ 0x0, 0xC5, 0xC5, SUCCESS, NUMBERLOCK, RELEASED, "NumberLock" },
+	{ 0x0, 0xC6, 0xC6, SUCCESS, SCROLLLOCK, RELEASED, "ScrollLock" },
+	{ 0x0, 0xC7, 0xC7, SUCCESS, '7', RELEASED, "7" },
+	{ 0x0, 0xC8, 0xC8, SUCCESS, '8', RELEASED, "8" },
+	{ 0x0, 0xC9, 0xC9, SUCCESS, '9', RELEASED, "9" },
+	{ 0x0, 0xCA, 0xCA, SUCCESS, '-', RELEASED, "-" },
+	{ 0x0, 0xCB, 0xCB, SUCCESS, '4', RELEASED, "4" },
+	{ 0x0, 0xCC, 0xCC, SUCCESS, '5', RELEASED, "5" },
+	{ 0x0, 0xCD, 0xCD, SUCCESS, '6', RELEASED, "6" },
+	{ 0x0, 0xCE, 0xCE, SUCCESS, '+', RELEASED, "+" },
+	{ 0x0, 0xCF, 0xCF, SUCCESS, '1', RELEASED, "1" },
+	{ 0x0, 0xD0, 0xD0, SUCCESS, '2', RELEASED, "2" },
+	{ 0x0, 0xD1, 0xD1, SUCCESS, '3', RELEASED, "3" },
+	{ 0x0, 0xD2, 0xD2, SUCCESS, '0', RELEASED, "0" },
+	{ 0x0, 0xD3, 0xD3, SUCCESS, '.', RELEASED, "." },
+	{ 0x0, 0xD7, 0xD7, SUCCESS, F11, RELEASED, "F11" },
+	{ 0x0, 0xD8, 0xD8, SUCCESS, F12, RELEASED, "F12" },
+	{ 0x0, 0xE0, 0xE0, VOID, K_ENTER, UNDEFINED, "Keyboard Enter"},
+	{ 0xE0, 0x9C, 0x9C, SUCCESS, K_ENTER, RELEASED, "Keyboard Enter"},
 	{ 0x0, 0x0, 0x0, ERROR },
 };
 
@@ -140,6 +206,14 @@ void	scan_fsm_clear(struct fsm *scan_fsm)
 	scan_fsm->key = 0;
 	scan_fsm->position = -1;
 	scan_fsm->name = NULL;
+}
+
+/* set ascii for non-ascii key ? */
+/* hack with a priority extended field if needed */
+
+static char		WHICH_KEY(char key)
+{
+	return key;
 }
 
 /* array of flags shift, ctrl, caps */
@@ -208,7 +282,7 @@ void			scan_fsm_send(struct fsm *scan_fsm, void *target, rwlock_t *keylist_rwloc
 	unsigned long		local_time;
 
 	if ((ks = kmalloc(sizeof(struct keystroke), GFP_KERNEL))) {
-		ks->key = scan_fsm->key;
+		ks->key = WHICH_KEY(scan_fsm->key);
 		ks->state = scan_fsm->position;
 		strcpy(ks->name, scan_fsm->name);
 

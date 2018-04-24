@@ -47,6 +47,7 @@
 
 # define PRESSED	0
 # define RELEASED	1
+# define VOID		2
 
 /* Flags State */
 
@@ -65,8 +66,27 @@
 # define TAB		6
 # define LEFT_CTRL	7
 # define BACK		8
+# define NUMBERLOCK	9
+# define SCROLLLOCK	10
 	/* resevered */
 # define ENTER		13
+
+# define F1		200
+# define F2		201
+# define F3		202
+# define F4		203
+# define F5		204
+# define F6		205
+# define F7		206
+# define F8		207
+# define F9		208
+# define F10		209
+# define F11		210
+# define F12		211
+# define LEFT_ALT	212
+# define RIGHT_ALT	213
+# define SPACE		214
+# define K_ENTER	215
 
 struct transition_table {
 	unsigned int		ct;

