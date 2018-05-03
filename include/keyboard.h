@@ -100,6 +100,7 @@
 # define END		225
 # define PAGE_DOWN	226
 # define DELETE		227
+# define SLASH		228
 
 # define PIC1_PORT	0x20
 # define PIC_EOI	0x20	

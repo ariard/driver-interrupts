@@ -202,6 +202,10 @@ static struct transition_table		scan_table [] = {
 	{ 0xE0, 0xCF, 0xCF, SUCCESS, END, RELEASED, "end"},
 	{ 0xE0, 0xD1, 0xD1, SUCCESS, PAGE_DOWN, RELEASED, "page down"},
 	{ 0xE0, 0xD3, 0xD3, SUCCESS, DELETE, RELEASED, "delete"},
+	{ 0xE0, 0x35, 0x35, SUCCESS, SLASH, PRESSED, "slash"},
+	{ 0xE0, 0xB5, 0xB5, SUCCESS, SLASH, RELEASED, "slash"},
+	{ 0xE0, 0x1C, 0x1C, SUCCESS, K_ENTER, PRESSED, "k_enter"},
+	{ 0xE0, 0x9C, 0x9C, SUCCESS, K_ENTER, RELEASED, "k_enter"},
 	{ 0x0, 0x0, 0x0, ERROR },
 };
 
