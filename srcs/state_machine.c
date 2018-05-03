@@ -180,6 +180,10 @@ static struct transition_table		scan_table [] = {
 	{ 0xE0, 0x38, 0x38, SUCCESS, RIGHT_ALT, PRESSED, "right alt"},
 	{ 0xE0, 0x9D, 0x9D, SUCCESS, RIGHT_CTRL, RELEASED, "right ctrl"},
 	{ 0xE0, 0xB8, 0xB8, SUCCESS, RIGHT_ALT, RELEASED, "right alt"},
+	{ 0xE0, 0x5B, 0x5B, SUCCESS, LEFT_GUI, PRESSED, "left GUI"},
+	{ 0xE0, 0x5C, 0x5C, SUCCESS, RIGHT_GUI, PRESSED, "right GUI"},
+	{ 0xE0, 0xDB, 0xDB, SUCCESS, LEFT_GUI, RELEASED, "left GUI"},
+	{ 0xE0, 0xDC, 0xDC, SUCCESS, RIGHT_GUI, RELEASED, "right GUI"},
 	{ 0x0, 0x0, 0x0, ERROR },
 };
 
