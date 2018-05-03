@@ -184,6 +184,14 @@ static struct transition_table		scan_table [] = {
 	{ 0xE0, 0x5C, 0x5C, SUCCESS, RIGHT_GUI, PRESSED, "right GUI"},
 	{ 0xE0, 0xDB, 0xDB, SUCCESS, LEFT_GUI, RELEASED, "left GUI"},
 	{ 0xE0, 0xDC, 0xDC, SUCCESS, RIGHT_GUI, RELEASED, "right GUI"},
+	{ 0xE0, 0x48, 0x48, SUCCESS, CURSOR_UP, PRESSED, "cursor up"},
+	{ 0xE0, 0x4B, 0x4B, SUCCESS, CURSOR_LEFT, PRESSED, "cursor left"},
+	{ 0xE0, 0x4D, 0x4D, SUCCESS, CURSOR_RIGHT, PRESSED, "cursor right"},
+	{ 0xE0, 0x50, 0x50, SUCCESS, CURSOR_DOWN, PRESSED, "cursor down"},
+	{ 0xE0, 0xC8, 0xC8, SUCCESS, CURSOR_UP, RELEASED, "cursor up"},
+	{ 0xE0, 0xCB, 0xCB, SUCCESS, CURSOR_LEFT, RELEASED, "cursor left"},
+	{ 0xE0, 0xCD, 0xCD, SUCCESS, CURSOR_RIGHT, RELEASED, "cursor right"},
+	{ 0xE0, 0xD0, 0xD0, SUCCESS, CURSOR_DOWN, RELEASED, "cursor down"},
 	{ 0x0, 0x0, 0x0, ERROR },
 };
 

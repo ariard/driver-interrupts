@@ -88,6 +88,12 @@
 # define SPACE		214
 # define K_ENTER	215
 # define RIGHT_CTRL	216
+# define LEFT_GUI	217
+# define RIGHT_GUI	218
+# define CURSOR_UP	219
+# define CURSOR_DOWN	220
+# define CURSOR_LEFT	221
+# define CURSOR_RIGHT	222
 
 # define PIC1_PORT	0x20
 # define PIC_EOI	0x20	
