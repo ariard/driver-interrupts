@@ -53,6 +53,7 @@
 
 # define CAPSLOCK_SET	flags_array[0] & 1
 # define SHIFTLOCK_SET	flags_array[1] & 1
+# define CTRLOCK_SET	flags_array[2] & 1
 
 # define SHIFT(x)	shift_table[(unsigned int)x]
 
@@ -103,7 +104,7 @@ struct transition_table {
 	unsigned int		input;
 	unsigned int		output;
 	int			state;
-	char			key;
+	unsigned char		key;
 	char			position;
 	char			*name;
 };
@@ -111,11 +112,11 @@ struct transition_table {
 struct fsm {
 	unsigned int		ct;
 	unsigned int 		state;
-	char			key;	
+	unsigned char		key;	
 	char			position;
 	char			*name;
 };
-
+ 
 struct keystroke {
 	unsigned char		key;
 	unsigned char		state;

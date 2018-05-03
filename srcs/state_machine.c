@@ -222,17 +222,10 @@ void	scan_fsm_clear(struct fsm *scan_fsm)
 	scan_fsm->name = NULL;
 }
 
-/* set ascii for non-ascii key ? */
-/* hack with a priority extended field if needed */
-
-static char		WHICH_KEY(char key)
-{
-	return key;
-}
 
 /* array of flags shift, ctrl, caps */
 
-static char 		flags_array [] = { 0x0, 0x0 };
+static char 		flags_array [] = { 0x0, 0x0, 0x0};
 
 static void		SET_FLAGS(struct fsm *scan_fsm)
 {
@@ -252,6 +245,15 @@ static void		SET_FLAGS(struct fsm *scan_fsm)
 	else if ((scan_fsm->key == LEFT_SHIFT || scan_fsm->key == RIGHT_SHIFT)
 		&& scan_fsm->position == RELEASED) {
 		flags_array[1] = 0;
+	}
+
+	if ((scan_fsm->key == LEFT_CTRL || scan_fsm->key == RIGHT_CTRL)
+		&& scan_fsm->position == PRESSED) {
+		flags_array[2] = 1;
+	}
+	else if ((scan_fsm->key == LEFT_CTRL || scan_fsm->key == RIGHT_CTRL) 
+		&& scan_fsm->position == RELEASED) {
+		flags_array[2] = 0;
 	}
 }
 
@@ -282,6 +284,8 @@ static unsigned int	WHICH_ASCII(unsigned char key)
 		value -= 32;
 	if (SHIFTLOCK_SET && (value > 32 && value < 127))
 		value = SHIFT(key);
+	if (CTRLOCK_SET && (value > 32 && value < 127))
+		value = 0;
 	
 	return value;
 }
@@ -294,7 +298,7 @@ void			scan_fsm_send(struct fsm *scan_fsm, void *target, rwlock_t *keylist_rwloc
 	unsigned long		local_time;
 
 	if ((ks = kmalloc(sizeof(struct keystroke), GFP_KERNEL))) {
-		ks->key = WHICH_KEY(scan_fsm->key);
+		ks->key = scan_fsm->key;
 		ks->state = scan_fsm->position;
 		strcpy(ks->name, scan_fsm->name);
 
