@@ -95,6 +95,11 @@
 # define CURSOR_DOWN	220
 # define CURSOR_LEFT	221
 # define CURSOR_RIGHT	222
+# define HOME		223
+# define PAGE_UP	224
+# define END		225
+# define PAGE_DOWN	226
+# define DELETE		227
 
 # define PIC1_PORT	0x20
 # define PIC_EOI	0x20	
