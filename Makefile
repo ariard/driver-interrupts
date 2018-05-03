@@ -1,7 +1,7 @@
-NAME    	= module_keylogger
-EXTRA_CFLAGS	= -I$(src)/include/
-SRCS		= srcs/
-PWD		= $(shell pwd)
+NAME    		= module_keylogger
+EXTRA_CFLAGS		= -I$(src)/include/
+PWD			= $(shell pwd)
+SRCS			= srcs/
 
 ifneq ($(KERNELRELEASE),)
 
