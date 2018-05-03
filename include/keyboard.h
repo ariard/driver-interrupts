@@ -63,10 +63,10 @@
 # define RIGHT_SHIFT	3
 # define ESC		4
 # define BACKSPACE	5
-# define TAB		6
+# define TAB		9
 # define LEFT_CTRL	7
 # define BACK		8
-# define NUMBERLOCK	9
+# define NUMBERLOCK	6
 # define SCROLLLOCK	10
 	/* resevered */
 # define ENTER		13
