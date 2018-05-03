@@ -264,9 +264,9 @@ static unsigned int	WHICH_ASCII(unsigned char key)
 {
 	unsigned int	value = (unsigned int)key;
 
-	if (CAPSLOCK_SET)
+	if (CAPSLOCK_SET && (value > 32 && value < 127))
 		value -= 32;
-	if (SHIFTLOCK_SET)
+	if (SHIFTLOCK_SET && (value > 32 && value < 127))
 		value = SHIFT(key);
 	
 	return value;
