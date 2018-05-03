@@ -148,7 +148,6 @@ static struct transition_table		scan_table [] = {
 	{ 0x0, 0xB8, 0xB8, SUCCESS, LEFT_ALT, RELEASED, "left alt" },
 	{ 0x0, 0xB9, 0xB9, SUCCESS, ' ', RELEASED, "space" },
 	{ 0x0, 0xBA, 0xBA, SUCCESS, CAPSLOCK, RELEASED, "CapsLock" },
-	{ 0x0, 0xB6, 0xB6, SUCCESS, RIGHT_SHIFT, RELEASED, "right shift" },
 	{ 0x0, 0xBB, 0xBB, SUCCESS, F1, RELEASED, "F1" },
 	{ 0x0, 0xBC, 0xBC, SUCCESS, F2, RELEASED, "F2" },
 	{ 0x0, 0xBD, 0xBD, SUCCESS, F3, RELEASED, "F3" },
@@ -176,8 +175,11 @@ static struct transition_table		scan_table [] = {
 	{ 0x0, 0xD3, 0xD3, SUCCESS, '.', RELEASED, "." },
 	{ 0x0, 0xD7, 0xD7, SUCCESS, F11, RELEASED, "F11" },
 	{ 0x0, 0xD8, 0xD8, SUCCESS, F12, RELEASED, "F12" },
-	{ 0x0, 0xE0, 0xE0, VOID, K_ENTER, UNDEFINED, "Keyboard Enter"},
-	{ 0xE0, 0x9C, 0x9C, SUCCESS, K_ENTER, RELEASED, "Keyboard Enter"},
+	{ 0x0, 0xE0, 0xE0, VOID, 0, UNDEFINED, ""},
+	{ 0xE0, 0x1D, 0x1D, SUCCESS, RIGHT_CTRL, PRESSED, "right ctrl"},
+	{ 0xE0, 0x38, 0x38, SUCCESS, RIGHT_ALT, PRESSED, "right alt"},
+	{ 0xE0, 0x9D, 0x9D, SUCCESS, RIGHT_CTRL, RELEASED, "right ctrl"},
+	{ 0xE0, 0xB8, 0xB8, SUCCESS, RIGHT_ALT, RELEASED, "right alt"},
 	{ 0x0, 0x0, 0x0, ERROR },
 };
 

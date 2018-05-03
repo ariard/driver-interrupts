@@ -61,7 +61,7 @@
 # define CAPSLOCK	1
 # define LEFT_SHIFT	2
 # define RIGHT_SHIFT	3
-# define ESC		4
+# define ESC		27
 # define BACKSPACE	5
 # define TAB		9
 # define LEFT_CTRL	7
@@ -87,6 +87,7 @@
 # define RIGHT_ALT	213
 # define SPACE		214
 # define K_ENTER	215
+# define RIGHT_CTRL	216
 
 # define PIC1_PORT	0x20
 # define PIC_EOI	0x20	
