@@ -1,0 +1,9 @@
+blanks characters ? y
+every keyboard on Apple Kbd ? y
+shift/capslock/ctrl ? y
+concurrency ? y
+shared IRQ ?
+ctrl + D and others ?
+'Unknown key released' ?
+
+=> verify all intern kernel function, register and memory allocation
