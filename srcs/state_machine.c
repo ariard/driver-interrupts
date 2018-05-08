@@ -244,11 +244,9 @@ static char 		flags_array [] = { 0x0, 0x0, 0x0};
 static void		SET_FLAGS(struct fsm *scan_fsm)
 {
 	if (scan_fsm->key == CAPSLOCK && scan_fsm->position == PRESSED && CAPSLOCK_SET) {
-		/* printk(KERN_INFO "flush CAPSLOCK\n"); */
 		flags_array[0] = 0;
 	}
 	else if (scan_fsm->key == CAPSLOCK && scan_fsm->position == PRESSED) {
-		/* printk(KERN_INFO "set CAPSLOCK\n"); */
 		flags_array[0] = 1;
 	}
 
@@ -304,7 +302,7 @@ static unsigned int	WHICH_ASCII(unsigned char key)
 	return value;
 }
  
-void			scan_fsm_send(struct fsm *scan_fsm, void *target, rwlock_t *keylist_rwlock)
+void			scan_fsm_send(struct fsm *scan_fsm, void *target)
 {
 	struct timeval		tv;
 	struct rtc_time		tm;
@@ -325,12 +323,6 @@ void			scan_fsm_send(struct fsm *scan_fsm, void *target, rwlock_t *keylist_rwloc
 		ks->tm = tm;
 
 		INIT_LIST_HEAD(&ks->list);
-		write_lock(keylist_rwlock);
 		list_add_tail(&ks->list, target);
-		write_unlock(keylist_rwlock);
 	}
 }
-
-/*		printk(KERN_INFO "[%04d-%02d-%02d %02d:%02d:%02d] key %c state %s name %s\n", tm.tm_year + 1900, tm.tm_mon + 1,
-			tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec, ks->key, (ks->state == 0) ? "PRESSED" :
-			"RELEASED", ks->name); */
